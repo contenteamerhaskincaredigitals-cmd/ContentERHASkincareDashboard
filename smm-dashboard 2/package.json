@@ -1,0 +1,12 @@
+{
+  "name": "smm-dashboard-erha",
+  "version": "1.0.0",
+  "description": "Social Media Monitoring - ERHASkincare, ERHAIR & Hiserha",
+  "private": true,
+  "main": "server.js",
+  "engines": { "node": ">=22.5" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "bash test/run.sh"
+  }
+}

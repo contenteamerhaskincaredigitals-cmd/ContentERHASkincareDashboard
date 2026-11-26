@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="app-mode" content="static">
+<title>Social Media Monitoring - ERHASkincare, ERHAIR &amp; Hiserha</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%230a5cff%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+/* VOICE: ruang kerja harian tim sosmed — terang, tenang, padat angka, jujur soal data kosong.
+   IDEA: peta jalur metro — tiap brand satu "jalur" berwarna, tiap modul satu stasiun.
+   PICTURE: grafik tren utama + empat angka besar di layar pertama.
+   COLOUR and TYPE: latar biru-abu sangat muda, kartu putih, teks navy (tanpa hitam), biru #0a5cff dominan, merah/amber/hijau untuk status. Figtree.
+   LAYOUT: header + jalur tab, konten maks 1240px, kartu mengalir, tabel bisa digulir. */
+:root{color-scheme:light;
+--bg:#f3f6fb;--card:#ffffff;--panel:#ffffff;--soft:#f6f8fc;--line:#dde4ef;
+--ink:#1c2b4a;--muted:#5d6b85;
+--blue:#0a5cff;--blue-deep:#0846c4;--blue-soft:#e8efff;--red:#e6261f;--red-soft:#fde9e8;
+--amber:#ffb400;--amber-soft:#fff4d6;--green:#00a05a;--green-soft:#e2f6ec;--purple:#7c3aed;
+--brand:#0a5cff}
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+html{scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Figtree,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:clip}
+a{color:var(--blue)}
+h1,h2,h3{line-height:1.15;margin:0;text-wrap:balance;color:var(--ink)}
+h1{font-size:clamp(18px,2.2vw,24px);font-weight:800}
+h2{font-size:20px;font-weight:800}
+h3{font-size:16px;font-weight:700}
+small,.muted{color:var(--muted)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 max(3vw,14px)}
+header.top{border-bottom:4px solid var(--brand);background:var(--card);position:sticky;top:0;z-index:20}
+header.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:12px}
+.title-block{flex:1 1 320px}
+.title-block small{display:block;font-size:13px}
+.brand-pick{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.brand-dot{width:14px;height:14px;border-radius:50%;background:var(--brand);border:3px solid var(--card);outline:2px solid var(--brand)}
+nav.tabs{border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:var(--hh,64px);z-index:19}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin}
+nav.tabs button{flex:none;border:0;background:none;font:inherit;font-weight:600;color:var(--muted);padding:12px 12px;border-bottom:3px solid transparent;border-radius:0;cursor:pointer;min-height:44px}
+nav.tabs button[aria-current=page]{color:var(--blue);border-color:var(--blue)}
+main{padding:20px 0 60px}
+.view{display:none}.view.on{display:block}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row.between{justify-content:space-between}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(28,43,74,.04)}
+.card>h3{margin-bottom:10px}
+.stack-sm>*+*{margin-top:8px}.stack>*+*{margin-top:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;border-top:4px solid var(--blue);box-shadow:0 1px 2px rgba(28,43,74,.04)}
+.kpi:nth-child(2){border-top-color:var(--red)}.kpi:nth-child(3){border-top-color:var(--amber)}.kpi:nth-child(4){border-top-color:var(--green)}
+.kpi .lbl{font-size:13px;font-weight:600;color:var(--muted)}
+.kpi .val{font-size:clamp(28px,3.4vw,40px);font-weight:800;line-height:1.1;margin:4px 0;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+.kpi .sub{font-size:13px;color:var(--muted)}
+.up{color:var(--green)}.down{color:var(--red)}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.b-demo{background:var(--amber-soft);color:#7a5300}
+.b-csv{background:var(--blue-soft);color:var(--blue)}
+.b-meta{background:var(--green-soft);color:#00804a}
+.b-red{background:var(--red-soft);color:var(--red)}
+.b-grey{background:#eaeef5;color:var(--muted)}
+.live-dot{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block}
+.live-on .live-dot{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.note{font-size:13px;color:var(--ink);border-left:3px solid var(--amber);padding:6px 10px;background:var(--amber-soft);border-radius:0 8px 8px 0}
+.note.info{border-color:var(--blue);background:var(--blue-soft)}
+.note.err{border-color:var(--red);background:var(--red-soft)}
+.note.ok{border-color:var(--green);background:var(--green-soft)}
+.banner{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--amber-soft);border:1px solid #f3d98a;border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.banner p{margin:0;font-size:14px;flex:1 1 380px}
+button,.btn{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px;min-height:40px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+button:hover,.btn:hover{border-color:#b9c6dc}
+button.primary,.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+button.primary:hover,.btn.primary:hover{background:var(--blue-deep)}
+button.danger{color:var(--red);border-color:var(--red)}
+button.ghost{border-color:transparent;background:transparent}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,nav.tabs button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.seg button{border:0;border-radius:0;min-height:38px}
+.seg button[aria-pressed=true]{background:var(--blue);color:#fff}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-height:40px;width:100%}
+textarea{min-height:80px;resize:vertical}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted)}
+label>input,label>select,label>textarea{margin-top:4px}
+.form{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+.form .full{grid-column:1/-1}
+.fig{position:relative;min-height:300px}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.fig .empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);text-align:center;padding:20px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap;position:sticky;top:0;background:var(--soft)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr.click{cursor:pointer}tbody tr.click:hover{background:var(--blue-soft)}
+.t-title{max-width:320px}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:#eaeef5;white-space:nowrap}
+.st-Ide{background:#eaeef5}.st-Brief{background:var(--blue-soft);color:var(--blue)}.st-Produksi{background:var(--amber-soft);color:#7a5300}.st-Review{background:#f3e8ff;color:var(--purple)}.st-Terjadwal{background:var(--green-soft);color:#00804a}.st-Tayang{background:var(--blue);color:#fff}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal .dow{font-size:12px;font-weight:700;color:var(--muted);text-align:center;padding:4px}
+.cal .day{min-height:96px;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:4px;cursor:pointer;display:flex;flex-direction:column;gap:3px}
+.cal .day.out{opacity:.45}.cal .day.today{outline:2px solid var(--blue);background:var(--card)}
+.cal .dnum{font-size:12px;font-weight:700}
+.cal .chip{font-size:11px;line-height:1.25;border-radius:6px;padding:2px 5px;background:var(--blue-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;min-height:0;display:block;text-align:left;width:100%}
+.idea{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.idea h4{margin:0 0 4px;font-size:15px}
+.list>*+*{margin-top:8px}
+.modal{position:fixed;inset:0;background:rgba(28,43,74,.45);display:flex;align-items:flex-start;justify-content:center;padding:4vh 12px;z-index:50;overflow-y:auto}
+.modal[hidden]{display:none}
+.modal .box{background:var(--card);color:var(--ink);border-radius:14px;max-width:760px;width:100%;padding:20px;box-shadow:0 20px 60px rgba(28,43,74,.25)}
+.modal .box header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:60;display:grid;gap:8px;width:min(92vw,520px)}
+#toast div{background:var(--blue);color:#fff;padding:10px 14px;border-radius:10px;font-weight:600;font-size:14px;box-shadow:0 8px 24px rgba(10,92,255,.25)}
+#toast div.err{background:var(--red);box-shadow:0 8px 24px rgba(230,38,31,.25)}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.mgrid div{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.mgrid b{display:block;font-size:18px;font-variant-numeric:tabular-nums}
+.mgrid span{font-size:12px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{min-height:32px;padding:4px 10px;font-size:13px;border-radius:999px}
+details.guide{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--soft)}
+details.guide+details.guide{margin-top:8px}
+details.guide summary{cursor:pointer;font-weight:700}
+details.guide ol,details.guide ul{padding-left:20px}
+code{background:#eaeef5;padding:1px 5px;border-radius:5px;font-size:13px;overflow-wrap:anywhere}
+.login{position:fixed;inset:0;background:var(--bg);z-index:70;display:grid;place-items:center;padding:16px}
+.login[hidden]{display:none}
+.login form{max-width:380px;width:100%;border-top:6px solid var(--blue)}
+.tr-item{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+.match{background:var(--green-soft);color:#00804a}
+/* laporan */
+.paper{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:28px;max-width:900px;margin:0 auto}
+.paper h1{font-size:26px}.paper h2{font-size:17px;margin:22px 0 8px;border-bottom:2px solid var(--blue);padding-bottom:4px}
+.paper table th{background:#eef3fb;color:var(--ink);position:static}.paper td,.paper th{border-color:#dde4ef}
+.paper .meta-line{color:var(--muted);font-size:13px}
+.paper .stripe{height:6px;background:linear-gradient(90deg,var(--blue) 0 50%,var(--red) 50% 75%,var(--amber) 75% 100%);margin:-28px -28px 20px;border-radius:10px 10px 0 0}
+@media(max-width:600px){header.top{position:static}nav.tabs{top:0}#brand-select{min-width:0!important;flex:1 1 160px}table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--muted);font-size:12px}.stack td:empty{display:none}.cal .day{min-height:64px}.cal .chip{font-size:10px}.paper{padding:16px}.paper .stripe{margin:-16px -16px 14px}}
+@media print{
+  @page{size:A4;margin:14mm}
+  body{background:#fff}
+  header.top,nav.tabs,.view:not(#v-laporan),#v-laporan .controls,#toast,.modal,.login,.no-print{display:none!important}
+  main{padding:0}.wrap{max-width:none;padding:0}
+  .paper{border:0;padding:0;max-width:none}.paper .stripe{margin:0 0 14px;border-radius:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .paper table{page-break-inside:auto}.paper tr{page-break-inside:avoid}.paper h2{page-break-after:avoid}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top"><div class="wrap">
+    <div class="title-block">
+      <h1>Social Media Monitoring - ERHASkincare, ERHAIR &amp; Hiserha</h1>
+      <small id="env-line">Memuat…</small>
+    </div>
+    <div class="brand-pick">
+      <span class="brand-dot" aria-hidden="true"></span>
+      <select id="brand-select" style="width:auto;min-width:200px" aria-label="Brand"></select>
+      <div class="seg" id="plat-seg" role="group" aria-label="Platform"><button data-plat="ig">Instagram</button><button data-plat="tiktok">TikTok</button><button data-plat="threads">Threads</button><button data-plat="all" data-en="All">Semua</button></div>
+      <span id="mode-badge" class="badge b-demo">Demo</span>
+      <span id="live-pill" class="badge b-grey"></span>
+      <div class="seg" id="lang-seg" role="group" aria-label="Bahasa / Language"><button data-lang="id">ID</button><button data-lang="en">EN</button></div>
+      <button id="logout-btn" class="ghost" hidden data-en="Log out">Keluar</button>
+    </div>
+  </div></header>
+  <nav class="tabs" aria-label="Menu"><div class="wrap" id="tabs"></div></nav>
+  <main><div class="wrap">
+
+    <!-- 1. RINGKASAN -->
+    <section class="view" id="v-ringkasan">
+      <div id="demo-banner"></div>
+      <div class="row between" style="margin-bottom:14px">
+        <div class="row">
+          <div class="seg" id="period-seg" role="group" aria-label="Periode">
+            <button data-p="7" data-en="7 days">7 hari</button><button data-p="30" data-en="30 days">30 hari</button><button data-p="90" data-en="90 days">90 hari</button>
+          </div>
+          <button id="sync-btn" class="primary" data-en="Sync now">Sinkron</button>
+          <span class="muted" id="last-sync">Sinkron terakhir: –</span>
+        </div>
+        <span class="muted" id="range-label"></span>
+      </div>
+      <div id="coverage-note"></div>
+      <div class="grid g4" id="kpis" style="margin:12px 0 16px"></div>
+      <div class="card">
+        <div class="row between" style="margin-bottom:8px">
+          <h3 style="margin:0" id="chart-title">Tren</h3>
+          <label style="display:flex;align-items:center;gap:8px"><span data-en="Metric">Metrik</span>
+            <select id="chart-metric" style="width:auto;margin:0">
+              <option value="followers">Followers</option><option value="engagements">Total Engagements</option><option value="views">Views</option>
+              <option value="likes">Likes</option><option value="comments" data-en="Comments">Komentar</option><option value="shares">Shares</option><option value="saves">Saves</option>
+            </select></label>
+        </div>
+        <div class="fig" id="main-chart"></div>
+        <div class="row" id="chart-legend" style="gap:14px;margin-top:6px;font-size:13px"></div>
+        <p class="muted" id="chart-note" style="margin:8px 0 0;font-size:13px"></p>
+      </div>
+      <div class="card" style="margin-top:14px"><h3 data-en="Best posts in this period">Posting terbaik di periode ini</h3><div id="top-mini"></div></div>
+    </section>
+
+    <!-- 2. KONTEN -->
+    <section class="view" id="v-konten">
+      <div class="row between" style="margin-bottom:12px">
+        <div class="row" style="flex:1 1 520px">
+          <input id="k-search" type="search" placeholder="Cari judul/caption…" data-en-ph="Search title/caption…" style="max-width:260px">
+          <select id="k-type" style="width:auto"></select>
+          <select id="k-period" style="width:auto"><option value="all" data-en="All dates">Semua tanggal</option><option value="7" data-en="7 days">7 hari</option><option value="30" data-en="30 days">30 hari</option><option value="90" data-en="90 days">90 hari</option></select>
+          <select id="k-sort" style="width:auto">
+            <option value="date:desc" data-en="Newest">Terbaru</option><option value="date:asc" data-en="Oldest">Terlama</option><option value="reach:desc" data-en="Highest reach">Reach tertinggi</option>
+            <option value="views:desc" data-en="Highest views">Views tertinggi</option><option value="eng:desc" data-en="Highest engagements">Engagements tertinggi</option><option value="er:desc" data-en="Highest ER">ER tertinggi</option>
+            <option value="er:asc" data-en="Lowest ER">ER terendah</option><option value="saves:desc" data-en="Highest saves">Saves tertinggi</option><option value="shares:desc" data-en="Highest shares">Shares tertinggi</option>
+          </select>
+        </div>
+        <div class="row">
+          <button id="k-export" data-en="Export filtered (CSV)">Ekspor hasil filter (CSV)</button>
+          <button id="k-template" data-en="Download CSV template">Unduh template CSV</button>
+          <button id="k-import" class="primary" data-en="Import CSV">Impor CSV</button>
+        </div>
+      </div>
+      <p class="muted" id="k-count" style="margin:0 0 8px"></p>
+      <div class="card" style="padding:0"><div class="scroll" style="max-height:70vh"><table class="stack" id="k-table"></table></div></div>
+    </section>
+
+    <!-- NEXT STEPS -->
+    <section class="view" id="v-nextsteps">
+      <div class="row between" style="margin-bottom:12px"><h2>Next Steps</h2><span class="muted" data-en="Based on posts from the last 90 days in the active data source">Berdasarkan posting 90 hari terakhir di sumber data aktif</span></div>
+      <div class="grid g2" id="ns-grid"></div>
+    </section>
+
+    <!-- 3. KOMPETITOR & TREN -->
+    <section class="view" id="v-tren">
+      <div class="grid g2">
+        <div class="card">
+          <h3 id="wl-title">Watchlist kompetitor</h3>
+          <form id="wl-form" class="row" style="margin-bottom:8px">
+            <input id="wl-input" placeholder="username, mis. skintific_id" data-en-ph="username, e.g. skintific_id" style="flex:1 1 200px" autocomplete="off">
+            <button class="primary" data-en="Add">Tambah</button>
+            <button type="button" id="wl-check-all" data-en="Check all via API">Cek semua via API</button>
+          </form>
+          <div class="chips" id="wl-suggest" style="margin-bottom:10px"></div>
+          <div id="wl-note"></div>
+          <div id="wl-list" class="list"></div>
+        </div>
+        <div class="card">
+          <h3 data-en="Keyword research (Google Trends)">Riset kata kunci (Google Trends)</h3>
+          <form id="kw-form" class="row">
+            <input id="kw-input" placeholder="Ketik kata kunci, pisahkan koma untuk membandingkan" data-en-ph="Type keywords, separate with commas to compare" style="flex:1 1 240px">
+            <a class="btn primary" id="kw-go" target="_blank" rel="noopener" data-en="Explore">Telusuri</a>
+          </form>
+          <p class="muted" style="font-size:13px;margin:6px 0" data-en="Examples for this brand's niche:">Contoh sesuai niche brand:</p>
+          <div class="chips" id="kw-chips"></div>
+          <div id="kw-result" style="margin-top:12px"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="row between"><h3 style="margin:0">Trending Now Indonesia</h3>
+          <div class="row"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="tr-only" style="width:auto;min-height:0"> <span data-en="Only matches with brand keywords">Hanya yang cocok dengan kata kunci brand</span></label><button id="tr-load" data-en="Load feed">Muat feed</button></div></div>
+        <div id="tr-list" style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <!-- 4. PLANNER -->
+    <section class="view" id="v-planner">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));align-items:start">
+        <div class="card">
+          <div class="row between" style="margin-bottom:10px"><h3 style="margin:0" data-en="Idea bank">Bank ide</h3><button class="primary" id="idea-add" data-en="Add idea">Tambah ide</button></div>
+          <div class="row" style="margin-bottom:10px">
+            <input id="idea-search" type="search" placeholder="Cari ide…" data-en-ph="Search ideas…" style="flex:1 1 160px">
+            <select id="idea-status" style="width:auto"></select>
+            <select id="idea-format" style="width:auto"></select>
+            <select id="idea-plat" style="width:auto"></select>
+            <select id="idea-dated" style="width:auto"><option value="all" data-en="All">Semua</option><option value="undated" data-en="No date yet">Belum bertanggal</option><option value="dated" data-en="Dated">Bertanggal</option></select>
+          </div>
+          <div id="idea-list" class="list"></div>
+        </div>
+        <div class="card" style="grid-column:span 2 / auto">
+          <div class="row between" style="margin-bottom:10px">
+            <h3 style="margin:0" id="cal-title">Kalender</h3>
+            <div class="row"><button id="cal-prev" aria-label="‹">‹</button><button id="cal-today" data-en="This month">Bulan ini</button><button id="cal-next" aria-label="›">›</button></div>
+          </div>
+          <div class="cal" id="cal"></div>
+          <p class="muted" style="font-size:13px;margin:8px 0 0" data-en="Click a date to add an idea on that day. Undated ideas stay in the idea bank.">Klik tanggal untuk menambah ide di hari itu. Ide tanpa tanggal tetap ada di bank ide.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. LAPORAN -->
+    <section class="view" id="v-laporan">
+      <div class="card controls" style="margin-bottom:14px">
+        <div class="row">
+          <div class="seg" id="rep-seg"><button data-p="7" data-en="7 days">7 hari</button><button data-p="30" data-en="30 days">30 hari</button><button data-p="90" data-en="90 days">90 hari</button><button data-p="custom" data-en="Custom">Kustom</button></div>
+          <label style="display:flex;gap:6px;align-items:center"><span data-en="From">Dari</span> <input type="date" id="rep-start" style="width:auto;margin:0"></label>
+          <label style="display:flex;gap:6px;align-items:center"><span data-en="To">Sampai</span> <input type="date" id="rep-end" style="width:auto;margin:0"></label>
+          <button id="rep-build" data-en="Refresh">Perbarui</button>
+          <button id="rep-print" class="primary" data-en="Print / Save PDF">Cetak / Simpan PDF</button>
+        </div>
+        <p class="muted" id="rep-hint" style="font-size:13px;margin:8px 0 0"></p>
+      </div>
+      <div class="paper" id="report-paper"></div>
+    </section>
+
+    <!-- 6. EKSPERIMEN -->
+    <section class="view" id="v-eksperimen">
+      <div class="row between" style="margin-bottom:12px"><h2>Experiment Tracker</h2><button class="primary" id="exp-add" data-en="Add experiment">Tambah eksperimen</button></div>
+      <div id="exp-list" class="stack"></div>
+    </section>
+
+    <!-- 7. LEADS WA -->
+    <section class="view" id="v-leads">
+      <div class="grid g2" style="align-items:start">
+        <div class="card">
+          <h3 data-en="Create a WhatsApp campaign link">Buat link WhatsApp kampanye</h3>
+          <form id="cmp-form" class="form">
+            <label class="full"><span data-en="Campaign name">Nama kampanye</span><input id="cmp-name" required placeholder="mis. Promo 12.12 Serum" data-en-ph="e.g. 12.12 Serum Promo"></label>
+            <label><span data-en="WhatsApp number (international format)">Nomor WhatsApp (format internasional)</span><input id="cmp-phone" required inputmode="numeric" placeholder="62812xxxxxxx"></label>
+            <label><span data-en="Campaign code (unique)">Kode kampanye (unik)</span><input id="cmp-code" required></label>
+            <label><span data-en="Channel">Kanal</span><select id="cmp-channel"><option value="ig">Instagram</option><option value="tiktok">TikTok</option><option value="threads">Threads</option><option value="other" data-en="Other">Lainnya</option></select></label>
+            <label class="full"><span data-en="Opening message">Pesan pembuka</span><textarea id="cmp-msg" required></textarea></label>
+            <div class="full row"><button class="primary" data-en="Save &amp; create link">Simpan &amp; buat link</button><span class="muted" style="font-size:13px" data-en="The code is added to the message automatically if missing.">Kode otomatis ditambahkan ke pesan kalau belum ada.</span></div>
+          </form>
+        </div>
+        <div class="card">
+          <h3 data-en="Log an incoming inquiry">Catat inquiry masuk</h3>
+          <form id="inq-form" class="form">
+            <label><span data-en="Date">Tanggal</span><input type="date" id="inq-date" required></label>
+            <label><span data-en="Campaign">Kampanye</span><select id="inq-cmp" required></select></label>
+            <label><span>Status</span><select id="inq-status"><option>Inquiry</option><option>Qualified</option><option>Booked</option><option>Closed</option></select></label>
+            <label class="full"><span data-en="Notes">Catatan</span><textarea id="inq-note" placeholder="mis. tanya harga paket, dari story" data-en-ph="e.g. asked about bundle price, came from story"></textarea></label>
+            <div class="full"><button class="primary" data-en="Save inquiry">Simpan inquiry</button></div>
+          </form>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px"><h3 data-en="Campaigns">Kampanye</h3><div class="scroll"><table class="stack" id="cmp-table"></table></div></div>
+      <div class="card" style="margin-top:14px"><h3>Inquiry</h3><div class="scroll"><table class="stack" id="inq-table"></table></div></div>
+    </section>
+
+    <!-- 8. SUMBER DATA -->
+    <section class="view" id="v-sumber">
+      <div class="card" style="margin-bottom:14px">
+        <div class="row between"><h3 style="margin:0" data-en="Data source for this brand">Sumber data untuk brand ini</h3><div class="seg" id="src-plat-seg" role="group" aria-label="Platform"><button data-plat="ig">Instagram</button><button data-plat="tiktok">TikTok</button><button data-plat="threads">Threads</button></div></div>
+        <div class="row" id="src-pick" style="margin-top:10px"></div>
+        <p class="muted" id="src-desc" style="font-size:13px;margin:8px 0 0"></p>
+      </div>
+      <div class="grid g2" style="align-items:start">
+        <div class="card stack-sm">
+          <h3>CSV</h3>
+          <p class="muted" style="margin:0;font-size:14px" id="csv-help"></p>
+          <label><span data-en="CSV file">File CSV</span><input type="file" id="csv-file" accept=".csv,text/csv"></label>
+          <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="csv-merge" style="width:auto;min-height:0"> <span data-en="Merge with existing CSV data (posts with the same title + date are replaced)">Gabungkan dengan data CSV lama (posting dengan judul + tanggal sama akan ditimpa)</span></label>
+          <div class="row"><button class="primary" id="csv-import" data-en="Import">Impor</button><button id="csv-template" data-en="Download template">Unduh template</button><button id="csv-sample" data-en="Download sample data">Unduh contoh data</button><button id="csv-clear" class="danger" data-en="Delete this brand's CSV data">Hapus data CSV brand ini</button></div>
+          <div id="csv-msg"></div>
+          <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+          <h3 data-en="Follower snapshots (for CSV mode)">Snapshot followers (untuk mode CSV)</h3>
+          <form id="snap-form" class="row"><input type="date" id="snap-date" style="width:auto" required><input type="number" min="0" id="snap-val" placeholder="Jumlah followers" data-en-ph="Follower count" style="width:180px" required><button data-en="Save snapshot">Simpan snapshot</button></form>
+          <div id="snap-list"></div>
+        </div>
+        <div class="card stack-sm" id="meta-card">
+         <div id="live-ig" class="stack-sm">
+          <h3>Meta Insights (Instagram API with Facebook Login)</h3>
+          <div id="meta-status"></div>
+          <form id="meta-form" class="stack-sm">
+            <label>Facebook User Access Token<input type="password" id="meta-token" autocomplete="off" placeholder="Tempel token dari Graph API Explorer" data-en-ph="Paste the token from Graph API Explorer"></label>
+            <div class="row"><button class="primary" id="meta-save" data-en="Save &amp; test">Simpan &amp; uji</button><button type="button" id="meta-test" data-en="Test connection">Uji koneksi</button><button type="button" id="meta-remove" class="danger" data-en="Remove token">Hapus token</button></div>
+            <p class="muted" style="font-size:13px;margin:0" data-en="The token is sent once to the server over this connection, stored encrypted (AES-256-GCM), and never sent back to the browser, written to logs, or included in CSV files.">Token dikirim sekali ke server lewat koneksi ini, disimpan terenkripsi (AES-256-GCM), dan tidak pernah dikirim balik ke browser, ditulis ke log, atau masuk ke file CSV.</p>
+          </form>
+          <div id="meta-map"></div>
+         </div>
+         <div id="live-other" class="stack-sm" hidden></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h3 id="guide-title">Panduan setup</h3>
+        <div id="guide"></div>
+      </div>
+    </section>
+
+    <!-- PENGATURAN -->
+    <section class="view" id="v-pengaturan">
+      <div class="card" style="margin-bottom:14px">
+        <div class="row between"><h3 style="margin:0">Brand</h3><button class="primary" id="set-save" data-en="Save settings">Simpan pengaturan</button></div>
+        <p class="muted" style="font-size:14px" data-en="The niche, audience, and keywords below are first drafts from checking each brand's products (marketplaces, reviews, brand materials). Replace them with audience data from Instagram Insights.">Niche, audiens, dan kata kunci di bawah adalah draf awal dari pengecekan produk tiap brand (marketplace, review, materi brand). Ganti sesuai data audiens di Instagram Insights.</p>
+        <div id="set-brands" class="stack"></div>
+      </div>
+      <div class="grid g2" style="align-items:start">
+        <div class="card stack-sm">
+          <h3 data-en="Defaults">Default</h3>
+          <label><span data-en="Default WhatsApp number (international format)">Nomor WhatsApp default (format internasional)</span><input id="set-wa" inputmode="numeric"></label>
+          <label><span data-en="Automatic sync (server version)">Sinkron otomatis (versi server)</span><select id="set-sync"><option value="5" data-en="Every 5 minutes">Tiap 5 menit</option><option value="10" data-en="Every 10 minutes">Tiap 10 menit</option><option value="15" data-en="Every 15 minutes">Tiap 15 menit</option><option value="30" data-en="Every 30 minutes">Tiap 30 menit</option><option value="60" data-en="Every 60 minutes">Tiap 60 menit</option></select></label>
+          <p class="muted" style="font-size:13px;margin:0" id="sync-help"></p>
+          <label><span data-en="Time zone">Zona waktu</span><input value="Asia/Jakarta (WIB)" disabled></label>
+        </div>
+        <div class="card stack-sm">
+          <h3 data-en="Storage">Penyimpanan</h3>
+          <div id="storage-info"></div>
+          <div class="row"><button id="backup-btn" data-en="Download backup (JSON)">Unduh backup (JSON)</button><button class="danger" id="reset-brand" data-en="Delete this brand's data">Hapus data brand ini</button></div>
+        </div>
+      </div>
+    </section>
+
+  </div></main>
+</div>
+
+<div class="modal" id="modal" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <header><h2 id="modal-title"></h2><button class="ghost" id="modal-close" aria-label="Tutup / Close">✕</button></header>
+  <div id="modal-body"></div>
+</div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div class="login" id="login" hidden>
+  <form class="card stack" id="login-form">
+    <h2 data-en="Sign in">Masuk</h2>
+    <p class="muted" style="margin:0">Social Media Monitoring - ERHASkincare, ERHAIR &amp; Hiserha</p>
+    <label>Username<input id="login-user" autocomplete="username" required></label>
+    <label>Password<input id="login-pass" type="password" autocomplete="current-password" required></label>
+    <div id="login-msg"></div>
+    <button class="primary" data-en="Sign in">Masuk</button>
+  </form>
+</div>
+<input type="file" id="hidden-csv" accept=".csv,text/csv" hidden>
+<script src="app.js"></script>
+</body>
+</html>
