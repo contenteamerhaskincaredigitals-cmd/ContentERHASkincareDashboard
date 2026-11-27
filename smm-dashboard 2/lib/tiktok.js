@@ -63,7 +63,7 @@ async function user(access) {
 async function videos(access, days = 90) {
   const sinceMs = Date.now() - days * 864e5, out = [];
   let cursor = null, page = 0, more = true;
-  while (more && page < 15) {
+  while (more && page < 60) {
     const d = await req('POST', '/v2/video/list/', access, { query: { fields: 'id,title,video_description,create_time,share_url,view_count,like_count,comment_count,share_count' }, body: cursor ? { max_count: 20, cursor } : { max_count: 20 } });
     const vs = d.videos || [];
     out.push(...vs);
