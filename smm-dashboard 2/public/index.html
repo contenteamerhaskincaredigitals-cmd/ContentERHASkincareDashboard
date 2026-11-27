@@ -45,6 +45,7 @@ main{padding:20px 0 60px}
 .view{display:none}.view.on{display:block}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .row.between{justify-content:space-between}
+#range-pick input{max-width:150px;min-width:0;padding-left:6px;padding-right:6px}
 .grid{display:grid;gap:14px}
 .g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
 .g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
@@ -179,6 +180,10 @@ code{background:#eaeef5;padding:1px 5px;border-radius:5px;font-size:13px;overflo
         <div class="row">
           <div class="seg" id="period-seg" role="group" aria-label="Periode">
             <button data-p="7" data-en="7 days">7 hari</button><button data-p="30" data-en="30 days">30 hari</button><button data-p="90" data-en="90 days">90 hari</button>
+          </div>
+          <div class="row" id="range-pick" style="gap:6px">
+            <label style="display:flex;align-items:center;gap:6px;margin:0"><span data-en="From">Dari</span><input type="date" id="rg-from" style="width:auto;margin:0"></label>
+            <label style="display:flex;align-items:center;gap:6px;margin:0"><span data-en="To">Sampai</span><input type="date" id="rg-to" style="width:auto;margin:0"></label>
           </div>
           <button id="sync-btn" class="primary" data-en="Sync now">Sinkron</button>
           <span class="muted" id="last-sync">Sinkron terakhir: –</span>
