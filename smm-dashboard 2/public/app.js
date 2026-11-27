@@ -9,7 +9,7 @@
 'use strict';
 
 // ================= state & bahasa =================
-const S = { view: 'ringkasan', period: 30, brand: null, calMonth: null, repPreset: '30', trends: null, lang: 'id', plat: 'ig', srcPlat: 'ig', live: null, kvVersion: null, plStatus: null };
+const S = { view: 'ringkasan', period: 30, range: null, brand: null, calMonth: null, repPreset: '30', trends: null, lang: 'id', plat: 'ig', srcPlat: 'ig', live: null, kvVersion: null, plStatus: null };
 try { const l = localStorage.getItem('smm-lang'); if (l === 'en' || l === 'id') S.lang = l; const p = localStorage.getItem('smm-plat'); if (['ig', 'tiktok', 'threads', 'all'].includes(p)) S.plat = p; } catch {}
 const L = (id, en) => (S.lang === 'en' ? en : id);
 const LOC = () => (S.lang === 'en' ? 'en-GB' : 'id-ID');
@@ -354,7 +354,7 @@ function drawChart(host, { dates, series, kind, label }) {
   let s = '';
   for (let k = 0; k <= 4; k++) { const v = min + ((max - min) * k) / 4, yy = y(v); s += `<line x1="${l}" x2="${W - r}" y1="${yy}" y2="${yy}" stroke="var(--line)"/><text x="${l - 6}" y="${yy + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(fmtC(v))}</text>`; }
   const step = Math.max(1, Math.ceil(n / (narrow ? 4 : 7)));
-  for (let i = 0; i < n; i += step) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(fmtD(dates[i], { day: 'numeric', month: 'short' }))}</text>`;
+  for (let i = 0; i < n; i += step) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(fmtD(dates[i], n > 180 ? { day: 'numeric', month: 'short', year: '2-digit' } : { day: 'numeric', month: 'short' }))}</text>`;
   if (kind === 'bar') {
     const bw = Math.max(2, Math.min(28, iw * 0.7));
     dates.forEach((d, i) => {
@@ -374,12 +374,23 @@ function drawChart(host, { dates, series, kind, label }) {
 
 // ================= 1. RINGKASAN =================
 function periodRange(n) { const e = today(); return [addDays(e, -(n - 1)), e]; }
-function coverageNotes(n) {
-  const [a] = periodRange(n), out = [], plats = S.plat === 'all' ? PLATS : [S.plat], pre = (p) => (S.plat === 'all' ? PNAME[p] + ': ' : '');
+// Rentang tanggal Ringkasan: preset (7/30/90 hari) atau tanggal pilihan sendiri, maksimal 1 tahun (366 hari)
+const MAX_RANGE = 366;
+function summaryRange() { return S.range || periodRange(S.period); }
+function setRange(a, e) {
+  const t = today();
+  if (!isDate(a) || !isDate(e)) { rSummary(); return toast(L('Tanggal tidak valid.', 'Invalid date.'), 'err'); }
+  if (e > t) e = t;
+  if (a > e) { rSummary(); return toast(L('Tanggal "Dari" harus sebelum atau sama dengan "Sampai".', '"From" must be on or before "To".'), 'err'); }
+  if (diffDays(a, e) + 1 > MAX_RANGE) { a = addDays(e, -(MAX_RANGE - 1)); toast(L('Rentang maksimal 1 tahun. Tanggal "Dari" disesuaikan ke ', 'Maximum range is 1 year. "From" was adjusted to ') + fmtD(a) + '.'); }
+  S.range = [a, e]; S.period = null; rSummary();
+}
+function coverageNotes(range) {
+  const [a, e0] = range, n = diffDays(a, e0) + 1, out = [], plats = S.plat === 'all' ? PLATS : [S.plat], pre = (p) => (S.plat === 'all' ? PNAME[p] + ': ' : '');
   for (const p of plats) {
     const c = coverageOf(S.brand, p);
     if (!c) out.push(pre(p) + L('Belum ada data posting untuk sumber ini. Impor CSV atau sambungkan API di menu Sumber data.', 'No post data for this source yet. Import a CSV or connect the API in Data sources.'));
-    else if (c.from > a) out.push(pre(p) + L(`Cakupan posting: data baru tersedia mulai ${fmtD(c.from)} (${diffDays(c.from, today()) + 1} dari ${n} hari periode ini).`, `Post coverage: data only available from ${fmtD(c.from)} (${diffDays(c.from, today()) + 1} of ${n} days in this period).`));
+    else if (c.from > a) out.push(pre(p) + L(`Cakupan posting: data baru tersedia mulai ${fmtD(c.from)} (${Math.max(0, diffDays(c.from, e0) + 1)} dari ${n} hari periode ini).`, `Post coverage: data only available from ${fmtD(c.from)} (${Math.max(0, diffDays(c.from, e0) + 1)} of ${n} days in this period).`));
     const sn = snapsOf(S.brand, p).filter((s) => s.followers != null).sort((x, y) => x.date.localeCompare(y.date));
     if (!sn.length) out.push(pre(p) + L('Belum ada snapshot followers.', 'No follower snapshots yet.'));
     else if (sn[0].date > a) out.push(pre(p) + L(`Cakupan followers: snapshot pertama ${fmtD(sn[0].date)}, jadi perubahan followers dihitung dari tanggal itu.`, `Follower coverage: first snapshot ${fmtD(sn[0].date)}, so follower change is counted from that date.`));
@@ -388,17 +399,18 @@ function coverageNotes(n) {
 }
 const METRIC_NAME = (m, plat) => ({ followers: 'Followers', engagements: 'Total Engagements', views: 'Views', likes: 'Likes', comments: commentsLabel(plat), shares: 'Shares', saves: 'Saves', reposts: 'Reposts', quotes: 'Quotes' }[m]);
 function rSummary() {
-  $$('#period-seg button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.p === S.period)));
+  $$('#period-seg button').forEach((b) => b.setAttribute('aria-pressed', String(!S.range && +b.dataset.p === S.period)));
   const plat = S.plat, single = plat !== 'all', s = single ? source() : null;
   const demoAny = single ? s === 'demo' : PLATS.some((p) => source(S.brand, p) === 'demo');
   $('#demo-banner').innerHTML = demoAny ? `<div class="banner"><p><strong>${esc(single ? L('Ini data contoh, bukan data asli.', 'This is sample data, not real data.') : L('Sebagian platform masih memakai data contoh.', 'Some platforms still use sample data.'))}</strong> ${esc(L('Angka demo dibuat otomatis untuk mencoba dashboard, jadi tidak bergerak real time. Untuk angka asli: impor CSV, atau sambungkan API platform di versi server supaya data tersinkron otomatis tiap beberapa menit.', 'Demo numbers are generated so you can try the dashboard, so they do not move in real time. For real numbers: import a CSV, or connect the platform API in the server version so data syncs automatically every few minutes.'))}</p><button class="primary" id="go-source">${esc(L('Ke Sumber data', 'Go to Data sources'))}</button></div>` : '';
   if (demoAny) $('#go-source').onclick = () => go('sumber');
-  const [a, e] = periodRange(S.period);
+  const [a, e] = summaryRange();
+  $('#rg-from').value = a; $('#rg-to').value = e; $('#rg-to').max = today(); $('#rg-from').max = e; $('#rg-from').min = addDays(e, -(MAX_RANGE - 1));
   $('#range-label').textContent = `${pName(plat)} · ${fmtD(a)} – ${fmtD(e)}`;
   const ls = single ? lastSyncOf(S.brand, plat) : PLATS.map((p) => lastSyncOf(S.brand, p)).filter(Boolean).sort().pop();
   $('#last-sync').textContent = L('Sinkron terakhir: ', 'Last sync: ') + fmtDT(ls);
   $('#sync-btn').textContent = single && s === 'csv' ? L('Impor CSV baru', 'Import new CSV') : (!single || s === 'meta' || s === 'api') ? L('Sinkron sekarang', 'Sync now') : L('Sinkron', 'Sync');
-  $('#coverage-note').innerHTML = coverageNotes(S.period).map((t) => `<p class="note" style="margin:6px 0">${esc(t)}</p>`).join('');
+  $('#coverage-note').innerHTML = coverageNotes([a, e]).map((t) => `<p class="note" style="margin:6px 0">${esc(t)}</p>`).join('');
   const ps = inRange(posts(), a, e), A = agg(ps), F = followerStats(plat, a, e);
   const shortD = (d) => esc(fmtD(d, { day: 'numeric', month: 'short' }));
   let fSub;
@@ -1212,7 +1224,9 @@ function bind() {
   $$('#plat-seg button').forEach((b) => (b.onclick = () => setPlat(b.dataset.plat)));
   $$('#src-plat-seg button').forEach((b) => (b.onclick = () => { S.srcPlat = b.dataset.plat; $('#csv-msg').dataset.keep = ''; rSource(); }));
   $('#brand-select').onchange = () => { S.brand = brands().find((b) => b.id === $('#brand-select').value); try { localStorage.setItem('smm-brand', S.brand.id); } catch {} $('#cmp-code').value = ''; $('#csv-msg').dataset.keep = ''; $('#csv-msg').innerHTML = ''; render(); };
-  $$('#period-seg button').forEach((b) => (b.onclick = () => { S.period = +b.dataset.p; rSummary(); }));
+  $$('#period-seg button').forEach((b) => (b.onclick = () => { S.period = +b.dataset.p; S.range = null; rSummary(); }));
+  $('#rg-from').onchange = () => setRange($('#rg-from').value, $('#rg-to').value);
+  $('#rg-to').onchange = () => setRange($('#rg-from').value, $('#rg-to').value);
   $('#chart-metric').onchange = rSummary;
   $('#sync-btn').onclick = async () => {
     const plats = S.plat === 'all' ? PLATS : [S.plat], live = plats.filter((p) => ['meta', 'api'].includes(source(S.brand, p)));
