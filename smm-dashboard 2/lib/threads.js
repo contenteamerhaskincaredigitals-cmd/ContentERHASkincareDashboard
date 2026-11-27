@@ -66,7 +66,7 @@ async function sync(token, days = 90) {
     after = r.paging?.cursors?.after && r.paging?.next ? r.paging.cursors.after : null;
     if (batch.length && Date.parse(batch[batch.length - 1].timestamp) < sinceMs) after = null;
     page++;
-  } while (after && page < 8);
+  } while (after && page < 20);
   media = media.filter((m) => m.media_type !== 'REPOST_FACADE' && Date.parse(m.timestamp) >= sinceMs);
   const ins = await pool(media, 4, (m) => insights(token, m.id));
   const num = (v) => (v == null || v === '' ? null : Number(v));
