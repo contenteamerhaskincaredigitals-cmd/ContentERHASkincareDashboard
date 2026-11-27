@@ -168,13 +168,15 @@ function storeSync(plat, brandId, newPosts, followers, days) {
   return { ok: true, fetched: newPosts.length, followers, syncedAt: now };
 }
 
+// Batas tarik histori: maksimal 1 tahun ke belakang (dipakai untuk isi histori sejak awal 2026)
+const MAX_DAYS = 366;
 async function runSync(brandId, days = 90) {
   const token = getToken();
   if (!token) return { ok: false, kind: 'no_token', advice: meta.ADVICE.no_token };
   const acc = (kvGet('meta:accounts') || {})[brandId];
   if (!acc) return { ok: false, kind: 'ig_not_found', advice: 'Brand ini belum terpetakan ke akun Instagram. Klik "Uji koneksi" di Sumber data dulu.' };
   try {
-    const d = Math.min(Math.max(Number(days) || 90, 7), 90);
+    const d = Math.min(Math.max(Number(days) || 90, 7), MAX_DAYS);
     const r = await meta.syncAccount(token, acc.igId, d);
     return storeSync('ig', brandId, r.posts, r.account.followers, d);
   } catch (e) { return metaFail(e); }
@@ -203,7 +205,7 @@ async function syncThreads(brandId, days = 90) {
     if (Date.now() - Date.parse(sec.refreshedAt || sec.savedAt) > 7 * 864e5) {
       try { const n = await threads.refresh(sec.token); setSecret(`threads:${brandId}`, { ...sec, token: n.token, refreshedAt: new Date().toISOString() }); sec.token = n.token; } catch (e) { if (['token_expired', 'token_invalid'].includes(e.kind)) throw e; }
     }
-    const d = Math.min(Math.max(Number(days) || 90, 7), 90);
+    const d = Math.min(Math.max(Number(days) || 90, 7), MAX_DAYS);
     const r = await threads.sync(sec.token, d);
     return storeSync('threads', brandId, r.posts, r.followers, d);
   } catch (e) { const f = metaFail(e); if (['token_expired', 'token_invalid', 'permission'].includes(f.kind)) setPlatStatus('threads', brandId, f); return f; }
@@ -230,7 +232,7 @@ async function testTiktok(brandId) {
 }
 async function syncTiktok(brandId, days = 90) {
   try {
-    const d = Math.min(Math.max(Number(days) || 90, 7), 90);
+    const d = Math.min(Math.max(Number(days) || 90, 7), MAX_DAYS);
     const [u, vids] = await withTT(brandId, async (tok) => [await tiktok.user(tok.access), await tiktok.videos(tok.access, d)]);
     return storeSync('tiktok', brandId, vids, u.followers, d);
   } catch (e) { const f = metaFail(e); if (['token_expired', 'token_invalid', 'permission', 'config', 'no_token'].includes(f.kind)) setPlatStatus('tiktok', brandId, f); return f; }
