@@ -139,7 +139,7 @@ async function syncAccount(token, igId, days = 90) {
     next = r.paging?.cursors?.after && r.paging?.next ? r.paging.cursors.after : null;
     if (batch.length && Date.parse(batch[batch.length - 1].timestamp) < sinceMs) next = null;
     page++;
-  } while (next && page < 8);
+  } while (next && page < 20);
   media = media.filter((m) => Date.parse(m.timestamp) >= sinceMs);
   const insights = await pool(media, 4, (m) => mediaInsights(token, m.id));
   const posts = media.map((m, i) => {
